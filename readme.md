@@ -267,7 +267,7 @@ paraeljefe-24tfoCSE8Rp5Kj4OTQ6jsBWo3Ga.txt
 paraeljefe-24vygIpnaXhfaoOnuz6OnmwNDDD.txt
 ```
 
-####Correr el servidor sobre Docker
+#### Correr el servidor sobre Docker
 
 Bueno, ya que llegamos aquí, podemos también correr el servidor sobre Docker. Esto también nos servirá más adelante.
 
