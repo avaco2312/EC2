@@ -1,0 +1,21 @@
+syntax = "proto3";
+package contract_grpc;
+option go_package = "./contract_grpc";
+
+message Paquete {
+	string id = 1; 
+	repeated Lectura lectura = 2; 
+}
+message Lectura {
+	repeated Linea linea = 1; 
+}
+
+message Linea{
+    repeated string parte = 1;
+}
+
+message Empty {}
+
+service GetPaquete {
+    rpc LeePaquete(Empty) returns (Paquete) {}
+}

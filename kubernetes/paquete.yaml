@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  paquete
+  namespace: default
+  labels:
+    app:  paquete
+spec:
+  selector:
+    matchLabels:
+      app: paquete
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  paquete
+    spec:
+      containers:
+      - name:  paquete
+        image:  avaco/paquete:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort:  9000
+          name:  paquete
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paquete
+  namespace: default
+spec:
+  selector:
+    app: paquete
+  type: NodePort
+  sessionAffinity: None
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  ports:
+  - name: paquete
+    protocol: TCP
+    port: 9000
+    targetPort: 9000
+    nodePort: 32210
