@@ -1,4 +1,4 @@
-## Una "prueba técnica": Servicio Golang REST API local, sobre Docker, gRPC, AWS Serverless y sobre Kubernetes en AWS EC2 {.unlisted .unnumbered}
+## Una "prueba técnica": Servicio Golang REST API local, sobre Docker, gRPC, AWS Serverless y sobre Kubernetes en AWS EC2 
 
 La motivación de este repositorio está en una "prueba técnica" pedida por un "reclutador TI". Esta prueba, comparada con otras vistas, me pareció bastante racional.
 
