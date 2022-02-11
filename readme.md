@@ -295,7 +295,7 @@ docker run -d --name paquete -p 9000:9000 avaco/paquete
 ```
 Si ejecutamos el cliente el resultado es el mismo que si corremos el servidor local.
 
-El nombre dado a la image permitió hacer fácilmente push al repositorio público "avaco" en Docker Hub, donde está disponible. Esto también lo utilizaremos más adelante.
+El nombre dado a la imagen permitió hacer fácilmente push al repositorio público "avaco" en Docker Hub, donde está disponible. Esto también lo utilizaremos más adelante.
 
 #### Servidor y cliente gRPC
 
@@ -396,7 +396,7 @@ Así que crearemos un REST API de un solo punto de entrada GET, mediante API Gat
 
 Este es el servidor. El cliente es el mismo que está en el directorio "clientes", lo que debemos cambiar la dirección de llamada http, de nuestra máquina local puerto 9000 a la dirección que genere API Gateway para nuestra REST API.
 
-Otra vez la extensión impide detenernos mucho. Pero en este caso es fácil: AWS ofrece magníficos tutoriales sobre API Gateway y Lambda. Son de corta duración, cubrwen lo que necesitaremos y... valen la pena.
+Otra vez la extensión impide detenernos mucho. Pero en este caso es fácil: AWS ofrece magníficos tutoriales sobre API Gateway y Lambda. Son de corta duración, cubren lo que necesitaremos y... valen la pena.
 
 Empezaremos con la función Lambda, el código en "servidor-aws":
 
@@ -453,7 +453,7 @@ Podríamos utilizar una distribución de Kubernetes en nuestra máquina local (k
 
 - Crear una instancia de una máquina virtual EC2 con Amazon Linux 2. Podemos hacerlo con la cuenta gratis de AWS, si usamos una máquina poco potente, por ejemplo, tipo t2.micro.
 - Aquí también seguir el tutorial de AWS sobre creación de instancias EC2. Los parámetros son todos los "default", excepto para la seguridad de la red. Debemos crear una regla de entrada que permita todo el tráfico TCP al puerto 32210, desde cualquier origen. Esto en un caso real no es seguro, pero en nuestro ejemplo lo necesitaremos.
-- No olvidar generar y guardar en sitio seguro el certificado de seguridad de la instancia (archivo .pem) que genera AWS. Lo necesitaremos para conectarnos con la máquina virtual desde otro equipo.
+- No olvidar guardar en sitio seguro el certificado de seguridad de la instancia (archivo .pem) que genera AWS. Lo necesitaremos para conectarnos con la máquina virtual desde otro equipo.
 - Lanzamos la instancia EC2 y nos conectamos a ella. Podemos hacerlo desde la propia consola de EC2, usando el navegador como terminal. O podemos establecer una conexión desde nuestro equipo usando SSH y el certificado. Todo esto desde una terminal linux (puede ser nativo o mediante Windows WSL). Y claro, podemos otra vez referirnos a las indicaciones y tutoriales de AWS, que nos guíen paso a paso.
 - Una vez conectados, en el shell de la instancia EC2 damos los siguientes comandos:
 
@@ -555,7 +555,7 @@ Para nuestro caso, el NodePort asocia el servicio a la dirección del nodo (y de
 
 Claro, existen formas más eficientes y seguras de exponer nuestros servicios. Pero son más complejas y van más allá de un ejemplo. Y además, no están disponibles con una cuenta gratis de AWS.
 
-Necesitamos tener el archivo "paquete.yaml" en el directorio local de la instancia EC2, para poder usarlo. Para llevarlo allí, desde nuestro equipo, se me ocurren varios procedimientos:
+Necesitamos tener el archivo "paquete.yaml" en el directorio local de la instancia EC2, para poder usarlo. Para llevarlo allí, desde nuestro equipo, podemos intentar varios procedimientos:
 
 - Recrearlo usando un editor de texto en la instancia EC2. Tarea engorrosa y propensa a errores, más difícil si sólo contamos allí con editores "primitivos".
 - Usar el servicio de almacenamiento S3 de AWS. Copiamos de nuestra máquina local a S3, usando el cliente de AWS y después desde S3 a la instancia EC2, usando la consola de la instancia. Los tutoriales correspondientes en AWS.
