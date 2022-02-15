@@ -10,6 +10,7 @@ El problema planteado, aunque no demasiado complejo, permite realizar diferentes
   - [Servidor y cliente gRPC](#servidor-y-cliente-grpc)
   - [Servidor sobre AWS Serverless](#servidor-sobre-aws-serverless)
   - [Servidor en Kubernetes K3S sobre una instancia de AWS EC2](#servidor-en-kubernetes-k3s-sobre-una-instancia-de-aws-ec2)
+  - [Actualización: Agregando Ingress al cluster Kubernetes](#actualización-agregando-ingress-al-cluster-kubernetes)
 
 #### El problema inicial
 
@@ -601,3 +602,89 @@ http://ec2-35-86-246-146.us-west-2.compute.amazonaws.com:32210/paquete
 - Las direcciones asignadas a las instancias EC2 se mantienen mientras no se detenga la instancia. De detenerla y reniciarla las direcciones cambian (claro, cuando usamos un  perfil "sólo gratis")
 - No intente cargar algo real a este cluster Kubernetes. La instancia EC2 gratis es poco potente y "explota" si pretendemos correr algo más pesado. Para pruebas más complejas es mejor una variante de Kubernetes local. O dinero y contratar en "grande" en la nube.
 - No es lo mejor, para muchos, hacer un deploy "propio" de Kubernetes. Existen múltiples proveedores de servicios en la nube, incluyendo AWS, que ofertan "Kubernetes como servicio", ahorrando no sólo costos, si no también el gran esfuerzo en configuración, mantenimiento y optimización que requiere un cluster "propio".
+
+#### Actualización: Agregando Ingress al cluster Kubernetes
+
+Para hacer la conexión al servicio paquete desde el exterior, vamos a desplegar un recurso Ingress, desechando la solución anterior de tipo NodePort. Esto hace más fácil accesar el servicio, balancear las cargas de trabajo (como veremos) y, más adelante, exponer otros servicios que querramos añadir al cluster.
+
+Primero editamos el servicio "paquete" en el archivo "paquete.yaml". Ahora el "type" es ClusterIP y eliminamos la indicación del número del NodePort. Quedaría:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: paquete
+  namespace: default
+spec:
+  selector:
+    app: paquete
+  type: ClusterIP
+  sessionAffinity: None
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  ports:
+  - name: paquete
+    protocol: TCP
+    port: 9000
+    targetPort: 9000
+```
+
+También en la definición del deployment cambiamos el número de réplicas a 3 (replicas:3), tendremos tres pods, cada uno con un "generador de paquetes de lecturas", que funcionan independientes. 
+
+Aplicamos la nueva definición con:
+
+```
+kubectl apply -f paquete.yaml
+
+kubectl get pods
+NAME                       READY   STATUS    RESTARTS   AGE
+paquete-75bb5556d8-9rk28   1/1     Running   0          33m
+paquete-75bb5556d8-2cjhc   1/1     Running   0          9s
+paquete-75bb5556d8-dnwnp   1/1     Running   0          9s
+
+kubectl get service
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+kubernetes   ClusterIP   10.43.0.1      <none>        443/TCP    44m
+paquete      ClusterIP   10.43.183.80   <none>        9000/TCP   38m
+```
+
+Cuando se re-aplican recursos modificados, automáticamente se ajusta el cluster a las nuevas especificaciones. Tenemos ahora tres pods "paquete". El ip del servicio "paquete" es un ip interno del cluster, 10.43.183.80, no visible en el exterior. Pero asocia ahora tres pods: cuando llamemos a la ip del servicio, cada vez llamará a un pod diferente, balanceando la carga de trabajo.
+
+Para hacerlo visible al exterior utilizamos un recurso Ingress:
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx
+  namespace: default
+spec:
+  rules:
+  - host: ec2-52-10-163-115.us-west-2.compute.amazonaws.com  
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/paquete"
+        backend:
+          service:
+            name: paquete
+            port:
+              number: 9000
+```
+
+Este recurso está concebido para hacer visibles los servicios al exterior: Indica un host externo, en este caso la instancia EC2 del cluster (damos su nombre DNS).  Al llamar a este host con la ruta GET "/paquete", se redigirá la petición al servicio "paquete" en el puerto 9000, y este llamará a uno de sus pods para dar respuesta. 
+
+Observen que el nombre de la instancia cambió, debido a que la detuve y la reinicie.
+
+Aplicamos el recurso ingress:
+
+```
+kubectl apply -f ingress.yaml
+```
+
+El cliente puede llamar ahora en el punto de entrada:
+
+https://ec2-52-10-163-115.us-west-2.compute.amazonaws.com/paquete
+
+Para que funcione, debemos quitar también en la definición de la instancia la regla que permitía el acceso TCP al puerto 32210 (ya no es necesario) y agregar una regla que permita el acceso HTTP y HTTPS (puertos 80 y 443 respectivamente).
