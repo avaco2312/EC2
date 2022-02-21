@@ -44,10 +44,6 @@ spec:
   selector:
     app: paquete
   type: ClusterIP
-  sessionAffinity: None
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800
   ports:
   - name: paquete
     protocol: TCP
